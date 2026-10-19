@@ -4,7 +4,7 @@ Setup: run `python3 -m http.server 8000` in the repo folder and open http://loca
 
 | Time | Do | Say |
 |---|---|---|
-| 0:00 | Click **Load sample data**. Point at the yellow banner. | "This is a synthetic dataset for a fictional time-tracking SaaS. Every volume and difficulty value is illustrative — and some are deliberately missing." |
+| 0:00 | Open the app; the sample loads automatically on first visit (otherwise click **Load sample data**). Point at the banner. | "This is a synthetic dataset for a fictional time-tracking SaaS. Every volume and difficulty value is illustrative — and some are deliberately missing." |
 | 0:15 | **Overview**: KPIs, intent donut, top priorities. | "77 keywords, 94% have volume, 13 match no intent rule. Nothing here is estimated." |
 | 0:30 | **Keywords**: show the 3 duplicate groups → click **Merge** on the exact group. Filter *Inputs → Missing volume*. | "Exact duplicates differ only by case or punctuation; near duplicates by word order or plurals. Merging keeps the highest-volume row and never sums volumes." |
 | 0:50 | **Intent rules**: type "pomodoro timer" in the tester (Unclassified). Add `timer` to rule 7 terms, tab out, retest. | "Rules are ordered and transparent — the first match wins and every keyword shows which rule decided it." |

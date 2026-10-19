@@ -16,6 +16,9 @@ const INTENT_COLORS = { informational: PALETTE[0], commercial: PALETTE[1], trans
 const FACTOR_COLORS = { volume: PALETTE[0], difficulty: PALETTE[2], intent: PALETTE[1], gap: PALETTE[3], rank: PALETTE[4] };
 
 let storageOk = true;
+let hadSavedState = false;
+/** Set when the visitor chose to start empty (or reset), so the sample is not auto-loaded again. */
+const START_EMPTY_KEY = STORAGE_KEY + '.startEmpty';
 let state = loadState();
 let cache = null;
 const ui = {
@@ -35,6 +38,7 @@ function loadState() {
   let raw = null;
   try { raw = localStorage.getItem(STORAGE_KEY); } catch { storageOk = false; return defaultState(); }
   if (!raw) return defaultState();
+  hadSavedState = true;
   try {
     const v = validateState(JSON.parse(raw));
     if (v.ok) return v.state;
@@ -43,6 +47,12 @@ function loadState() {
     queueMicrotask(() => setStatus('Saved data was corrupted and was ignored. Load sample data or import a CSV to continue.', 'bad'));
   }
   return defaultState();
+}
+function startEmptyChosen() {
+  try { return localStorage.getItem(START_EMPTY_KEY) === '1'; } catch { return false; }
+}
+function rememberStartEmpty() {
+  try { localStorage.setItem(START_EMPTY_KEY, '1'); } catch { /* storage unavailable */ }
 }
 function save() {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
@@ -94,7 +104,7 @@ function render() {
     if (a.dataset.tab === ui.tab) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
   });
   document.getElementById('banner').innerHTML = state.isSample
-    ? `<div class="banner"><strong>Sample data — synthetic.</strong> “Fernleaf” (fernleaf.example.com), its competitors and every keyword volume, difficulty, CPC and rank shown are illustrative, not real search data. Some rows deliberately have missing values to show how gaps are handled.</div>`
+    ? `<div class="sample-banner" role="note"><p class="sample-banner__text"><strong>Sample data — synthetic.</strong> “Fernleaf” (fernleaf.example.com), its competitors and every keyword volume, difficulty, CPC and rank shown are illustrative, not real search data. Some rows deliberately have missing values to show how gaps are handled.</p><button type="button" class="sample-banner__action" data-action="start-own">Start with your own data</button></div>`
     : '';
   const main = document.getElementById('main');
   let html;
@@ -121,7 +131,7 @@ function renderOverview() {
   const top = a.scores.filter(x => x.score !== null).slice(0, 10);
   const topRows = top.map(x => ({ label: a.summaries.get(x.id).seed, segments: [{ key: 'score', value: x.score }] }));
   return `
-  <div class="page-head"><h1>Overview</h1><span class="muted small">Everything is calculated in your browser from the data you imported.</span></div>
+  <div class="page-head"><div><h1>Overview</h1><p>Everything is calculated in your browser from the data you imported.</p></div></div>
   <div class="kpis">
     ${kpi('Keywords', n0(s.keywords), `${a.duplicates.length} duplicate group(s) to review`)}
     ${kpi('Clusters', n0(a.clusters.length), `threshold ${a.threshold}`)}
@@ -164,7 +174,7 @@ function fallbackTable(headers, rows) {
 // ---------- Keywords ----------
 function renderKeywords() {
   return `
-  <div class="page-head"><h1>Keywords</h1><span class="muted small">Import, normalise, de-duplicate and edit keyword research.</span></div>
+  <div class="page-head"><div><h1>Keywords</h1><p>Import, normalise, de-duplicate and edit keyword research.</p></div></div>
   ${renderImportCard()}
   ${state.keywords.length ? renderDuplicates() + renderKeywordTable() : emptyState('No keywords yet', 'Choose a CSV above, paste CSV text, or load the synthetic sample.', sampleBtn)}`;
 }
@@ -302,7 +312,7 @@ function keywordTableHtml() {
 function renderRules() {
   const a = state.keywords.length ? A() : null;
   return `
-  <div class="page-head"><h1>Intent rules</h1><span class="muted small">Transparent, ordered, editable.</span></div>
+  <div class="page-head"><div><h1>Intent rules</h1><p>Transparent, ordered, editable.</p></div></div>
   <p class="lead">Rules are checked from top to bottom against the <em>normalised</em> keyword. The first enabled rule that matches decides the intent; if none matches, the keyword is <strong>Unclassified</strong>. Terms are comma-separated and match whole words or phrases. A manual override on the Keywords tab always wins.</p>
   <section class="card">
     <h2>Test a keyword</h2>
@@ -347,7 +357,7 @@ function renderClusters() {
   if (!state.keywords.length) return `<div class="page-head"><h1>Clusters</h1></div>` + emptyState('Nothing to cluster yet', 'Import keywords or load the sample data first.', sampleBtn + toKeywordsBtn);
   const t = state.settings.clusterThreshold;
   return `
-  <div class="page-head"><h1>Clusters</h1><span class="muted small">${A().clusters.length} cluster(s) from ${state.keywords.length} keyword(s)</span></div>
+  <div class="page-head"><div><h1>Clusters</h1><p>${A().clusters.length} cluster(s) from ${state.keywords.length} keyword(s)</p></div></div>
   <section class="card">
     <h2>How keywords are grouped</h2>
     <p class="small">Each keyword is reduced to <strong>core terms</strong> (normalised words${state.settings.foldPlurals ? ', plurals folded' : ''}, minus stopwords and intent modifiers such as “best”, “how”, “free”). Keywords are processed by volume (highest first; missing volume last, then A→Z). Each joins the existing cluster whose <strong>seed</strong> has the highest Jaccard similarity (shared terms ÷ all distinct terms) if it reaches the threshold; otherwise it starts a new cluster. Same data + same settings = same clusters.</p>
@@ -403,7 +413,7 @@ function renderGaps() {
     ${simpleImportBlock('competitors', 'Competitor coverage CSV', COMPETITOR_FIELDS, state.competitors.length, 'sample-data/competitors-template.csv', 'sample-data/competitors-sample.csv')}
     ${simpleImportBlock('ourPages', 'Our pages CSV', OUR_PAGE_FIELDS, state.ourPages.length, 'sample-data/our-pages-template.csv', 'sample-data/our-pages-sample.csv')}
   </div>`;
-  const head = `<div class="page-head"><h1>Content gaps</h1><span class="muted small">Topics competitors cover that you don’t.</span></div>`;
+  const head = `<div class="page-head"><div><h1>Content gaps</h1><p>Topics competitors cover that you don’t.</p></div></div>`;
   if (!state.keywords.length) return head + imports + emptyState('Import keywords first', 'Gaps are measured against your keyword clusters, so import keyword research (or the sample) first.', sampleBtn + toKeywordsBtn);
   const a = A();
   if (!a.gaps.hasCompetitorData) return head + imports + emptyState('No competitor data yet', 'Import a CSV listing competitor domains, URLs and the topic or keyword each page covers. Gap status is shown as “missing input” until then — nothing is guessed.', '<a class="btn" href="sample-data/competitors-template.csv" download>Download competitor template</a>');
@@ -448,7 +458,7 @@ function renderGaps() {
 
 // ---------- Briefs ----------
 function renderBriefs() {
-  const head = `<div class="page-head"><h1>Content briefs</h1><span class="muted small">Generated from a cluster, then fully editable. Saved in this browser.</span></div>`;
+  const head = `<div class="page-head"><div><h1>Content briefs</h1><p>Generated from a cluster, then fully editable. Saved in this browser.</p></div></div>`;
   if (!state.keywords.length && !Object.keys(state.briefs).length) return head + emptyState('No clusters yet', 'Import keywords or load the sample data, then generate a brief from any cluster.', sampleBtn + toKeywordsBtn);
   const a = state.keywords.length ? A() : null;
   const options = a ? a.scores.map((s, i) => `<option value="${esc(s.id)}" ${ui.briefCluster === s.id ? 'selected' : ''}>#${i + 1} · ${esc(a.summaries.get(s.id).seed)} (score ${s.score ?? 'n/a'})${state.briefs[s.id] ? ' ✓ saved' : ''}</option>`).join('') : '';
@@ -494,7 +504,7 @@ function renderBriefs() {
 
 // ---------- Priorities ----------
 function renderPriorities() {
-  const head = `<div class="page-head"><h1>Priorities</h1><span class="muted small">Explainable weighted score per cluster, from available inputs only.</span></div>`;
+  const head = `<div class="page-head"><div><h1>Priorities</h1><p>Explainable weighted score per cluster, from available inputs only.</p></div></div>`;
   if (!state.keywords.length) return head + emptyState('Nothing to prioritise yet', 'Import keywords or load the sample data first.', sampleBtn + toKeywordsBtn);
   const a = A();
   const w = state.settings.weights;
@@ -553,7 +563,7 @@ function renderPriorities() {
 
 // ---------- Data ----------
 function renderData() {
-  return `<div class="page-head"><h1>Data</h1><span class="muted small">Everything is stored only in this browser (localStorage).</span></div>
+  return `<div class="page-head"><div><h1>Data</h1><p>Everything is stored only in this browser (localStorage).</p></div></div>
   ${storageOk ? '' : '<div class="banner" style="margin-bottom:16px">Browser storage is unavailable (private mode or blocked). Your work will be lost on reload — use “Back up data”.</div>'}
   <div class="grid two">
     <section class="card"><h2>Backup and restore</h2>
@@ -598,7 +608,7 @@ function importSimple(kind, text, fileName) {
   } catch (e) { setStatus(`${fileName}: ${e.message}`, 'bad'); }
 }
 
-async function loadSample() {
+async function loadSample(_el, quiet = false) {
   if ((state.keywords.length || state.competitors.length) && !confirm('Replace current data with the synthetic sample? Back up first if you want to keep it.')) return;
   try {
     const [kw, comp, pages] = await Promise.all(['keywords-sample.csv', 'competitors-sample.csv', 'our-pages-sample.csv']
@@ -612,9 +622,11 @@ async function loadSample() {
     s.ourPages = importSimpleRows(p.headers, p.rows, OUR_PAGE_FIELDS).items;
     state = s;
     ui.pendingImport = null; ui.importReport = null; ui.briefCluster = ''; ui.simpleReport = null;
-    commit(`Loaded synthetic sample: ${s.keywords.length} keywords, ${s.competitors.length} competitor topics, ${s.ourPages.length} pages.`);
+    commit(quiet ? '' : `Loaded synthetic sample: ${s.keywords.length} keywords, ${s.competitors.length} competitor topics, ${s.ourPages.length} pages.`);
+    return true;
   } catch (e) {
     setStatus(`Could not load sample data (${e.message}). Open the app through a local web server (see README), not as a file:// page.`, 'bad');
+    return false;
   }
 }
 
@@ -697,8 +709,15 @@ const actions = {
   'export-recs-md': () => { download('prioritised-recommendations.md', recommendationsMarkdown(state, A(), { limit: 1000 }), 'text/markdown'); setStatus('Exported recommendations Markdown.'); },
   'weights-reset': () => { state.settings.weights = { ...DEFAULT_WEIGHTS }; state.settings.intentValues = { ...DEFAULT_INTENT_VALUES }; commit('Weights and intent values reset to defaults.'); },
   backup: () => { download(`seo-content-intelligence-backup-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(makeBackup(state), null, 2), 'application/json'); setStatus('Backup downloaded.'); },
+  'start-own': () => {
+    rememberStartEmpty();
+    state = defaultState(); ui.pendingImport = null; ui.importReport = null; ui.briefCluster = ''; ui.simpleReport = null;
+    if (ui.tab !== 'overview' && ui.tab !== 'keywords') history.replaceState(null, '', '#overview');
+    commit('Sample cleared. Import your own keyword CSV, or load the sample again.');
+  },
   reset: () => {
     if (!confirm('Delete all keywords, rules, settings, competitor data, pages and briefs from this browser? This cannot be undone.')) return;
+    rememberStartEmpty();
     state = defaultState(); ui.pendingImport = null; ui.importReport = null; ui.briefCluster = ''; ui.simpleReport = null;
     commit('All data reset.');
   }
@@ -790,4 +809,10 @@ document.addEventListener('input', e => {
 });
 window.addEventListener('hashchange', () => { setStatus(''); render(); document.getElementById('main').focus({ preventScroll: true }); window.scrollTo(0, 0); });
 
-render();
+// First visit (nothing saved, sample not declined): open the synthetic sample so the overview is populated.
+if (!hadSavedState && !startEmptyChosen()) {
+  document.getElementById('main').innerHTML = '<p class="muted">Loading the synthetic sample…</p>';
+  loadSample(null, true).then(ok => { if (!ok) render(); });
+} else {
+  render();
+}

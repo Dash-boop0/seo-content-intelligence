@@ -73,8 +73,9 @@ fetch from `file://`. Use a local server as shown above.
 
 ## How to use
 
-1. **Load sample data**, or go to **Keywords** and import your CSV (file or pasted text). Check the column
-   mapping and import.
+1. Your first visit opens the synthetic sample automatically. To use your own data, click **Start with your own data**
+   in the sample banner (the choice is remembered), then go to **Keywords** and import your CSV (file or pasted text).
+   Check the column mapping and import. **Load sample data** brings the sample back at any time.
 2. **Keywords**: review duplicate groups and merge them, filter rows with missing inputs, fill in or correct values
    inline, and override intent where the rules are wrong.
 3. **Intent rules**: test keywords, then edit, reorder, disable or add rules. Intents recalculate immediately.

@@ -10,13 +10,13 @@
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
-  <header class="topbar">
-    <div class="topbar-inner">
-      <div class="brand">
-        <svg aria-hidden="true" width="26" height="26" viewBox="0 0 32 32"><rect width="32" height="32" rx="7" fill="var(--accent)"/><path d="M8 22h4v-6H8zm6 0h4V10h-4zm6 0h4v-9h-4z" fill="#fff"/></svg>
-        <span>SEO Content Intelligence</span>
+  <header class="site-header">
+    <div class="site-header__inner">
+      <div class="site-header__top">
+        <a class="site-brand" href="#overview"><svg class="site-brand__icon" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect width="32" height="32" rx="7"/><path class="glyph-f" d="M8 22h4v-6H8zm6 0h4V10h-4zm6 0h4v-9h-4z"/></svg><span class="site-brand__name">SEO Content Intelligence</span></a>
+        <a class="site-home" href="https://dash-boop0.github.io/"><span aria-hidden="true">←</span> All projects</a>
       </div>
-      <nav class="tabs" aria-label="Sections" id="tabs">
+      <nav class="site-tabs" aria-label="Sections" id="tabs">
         <a href="#overview" data-tab="overview">Overview</a>
         <a href="#keywords" data-tab="keywords">Keywords</a>
         <a href="#rules" data-tab="rules">Intent rules</a>
@@ -28,16 +28,19 @@
       </nav>
     </div>
   </header>
-  <div id="banner" class="wrap"></div>
+  <div id="banner" class="site-banner"></div>
   <div id="status" class="wrap status" role="status" aria-live="polite"></div>
-  <main id="main" class="wrap" tabindex="-1">
+  <main id="main" class="site-main" tabindex="-1">
     <noscript><p class="card">This tool needs JavaScript enabled. All processing happens in your browser.</p></noscript>
   </main>
-  <footer class="footer">
-    <div class="wrap">
-      Portfolio project by <a href="https://dash-boop0.github.io/">Dash-boop0</a> ·
-      <a href="https://github.com/Dash-boop0/seo-content-intelligence">Source on GitHub</a> ·
-      Sample data is synthetic
+  <footer class="site-footer">
+    <div class="site-footer__inner">
+      <nav class="site-footer__links" aria-label="Portfolio links">
+        <a href="https://dash-boop0.github.io/"><span aria-hidden="true">←</span> All projects</a>
+        <a href="https://github.com/Dash-boop0/seo-content-intelligence">Source on GitHub</a>
+        <a href="https://github.com/Dash-boop0/seo-content-intelligence/blob/main/LICENSE">MIT licence</a>
+      </nav>
+      <p class="site-footer__note">Sample data is synthetic · Your data stays in this browser</p>
     </div>
   </footer>
   <script type="module" src="src/app.js"></script>
