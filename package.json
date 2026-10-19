@@ -1,0 +1,12 @@
+{
+  "name": "seo-content-intelligence",
+  "version": "1.0.0",
+  "description": "Turn keyword research CSVs into intent clusters, content gaps, editable briefs and explainable priorities. Static, no dependencies.",
+  "type": "module",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test",
+    "start": "python3 -m http.server 8000"
+  }
+}

@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SEO Content Intelligence</title>
+  <meta name="description" content="Turn keyword research CSVs into search-intent clusters, content gaps, editable briefs and explainable priorities. Runs in your browser; no data leaves your device.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232F5BEA'/%3E%3Cpath d='M8 22h4v-6H8zm6 0h4V10h-4zm6 0h4v-9h-4z' fill='white'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="src/styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <svg aria-hidden="true" width="26" height="26" viewBox="0 0 32 32"><rect width="32" height="32" rx="7" fill="var(--accent)"/><path d="M8 22h4v-6H8zm6 0h4V10h-4zm6 0h4v-9h-4z" fill="#fff"/></svg>
+        <span>SEO Content Intelligence</span>
+      </div>
+      <nav class="tabs" aria-label="Sections" id="tabs">
+        <a href="#overview" data-tab="overview">Overview</a>
+        <a href="#keywords" data-tab="keywords">Keywords</a>
+        <a href="#rules" data-tab="rules">Intent rules</a>
+        <a href="#clusters" data-tab="clusters">Clusters</a>
+        <a href="#gaps" data-tab="gaps">Content gaps</a>
+        <a href="#briefs" data-tab="briefs">Briefs</a>
+        <a href="#priorities" data-tab="priorities">Priorities</a>
+        <a href="#data" data-tab="data">Data</a>
+      </nav>
+    </div>
+  </header>
+  <div id="banner" class="wrap"></div>
+  <div id="status" class="wrap status" role="status" aria-live="polite"></div>
+  <main id="main" class="wrap" tabindex="-1">
+    <noscript><p class="card">This tool needs JavaScript enabled. All processing happens in your browser.</p></noscript>
+  </main>
+  <footer class="footer">
+    <div class="wrap">
+      Portfolio project by <a href="https://dash-boop0.github.io/">Dash-boop0</a> ·
+      <a href="https://github.com/Dash-boop0/seo-content-intelligence">Source on GitHub</a> ·
+      Sample data is synthetic
+    </div>
+  </footer>
+  <script type="module" src="src/app.js"></script>
+</body>
+</html>
